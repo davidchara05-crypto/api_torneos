@@ -1,0 +1,12 @@
+GET http://localhost:8080/api/torneos
+######
+POST http://localhost:8080/api/torneos
+Content-Type: application/json
+
+{
+    "nombre": "Copa Llanera",
+    "ciudad": "Villavicencio",
+    "categoria": "Sub-20",
+    "numeroEquipos": 16,
+    "fechaInicio": "2026-11-15"
+}

@@ -20,14 +20,28 @@ public class TorneoController {
         this.torneoService = torneoService;
     }
 
+    // CREATE
+    @PostMapping
+    public ResponseEntity<Torneo> crearTorneo(
+            @RequestBody TorneoRequest request) {
+
+        Torneo torneoCreado = torneoService.crear(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(torneoCreado);
+    }
+
+    // READ - Todos
     @GetMapping
     public ResponseEntity<List<Torneo>> obtenerTodos() {
 
-        List<Torneo> torneos = torneoService.obtenerTodos();
-
-        return ResponseEntity.ok(torneos);
+        return ResponseEntity.ok(
+                torneoService.obtenerTodos()
+        );
     }
 
+    // READ - Por ID
     @GetMapping("/{id}")
     public ResponseEntity<Torneo> obtenerPorId(
             @PathVariable Long id) {
@@ -39,25 +53,40 @@ public class TorneoController {
                 );
     }
 
+    // CONSULTA PERSONALIZADA
     @GetMapping("/buscar")
     public ResponseEntity<List<Torneo>> buscarPorCiudad(
             @RequestParam String ciudad) {
 
-        List<Torneo> torneos =
-                torneoService.buscarPorCiudad(ciudad);
-
-        return ResponseEntity.ok(torneos);
+        return ResponseEntity.ok(
+                torneoService.buscarPorCiudad(ciudad)
+        );
     }
 
-    @PostMapping
-    public ResponseEntity<Torneo> crearTorneo(
+    // UPDATE
+    @PutMapping("/{id}")
+    public ResponseEntity<Torneo> actualizarTorneo(
+            @PathVariable Long id,
             @RequestBody TorneoRequest request) {
 
-        Torneo torneoCreado =
-                torneoService.crear(request);
+        return torneoService.actualizar(id, request)
+                .map(ResponseEntity::ok)
+                .orElseGet(() ->
+                        ResponseEntity.notFound().build()
+                );
+    }
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(torneoCreado);
+    // DELETE
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarTorneo(
+            @PathVariable Long id) {
+
+        boolean eliminado = torneoService.eliminar(id);
+
+        if (!eliminado) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.noContent().build();
     }
 }

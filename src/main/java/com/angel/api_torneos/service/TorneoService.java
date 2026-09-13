@@ -2,67 +2,27 @@ package com.angel.api_torneos.service;
 
 import com.angel.api_torneos.dto.TorneoRequest;
 import com.angel.api_torneos.model.Torneo;
+import com.angel.api_torneos.repository.TorneoRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class TorneoService {
 
-    private final List<Torneo> torneos = new ArrayList<>();
+    private final TorneoRepository torneoRepository;
 
-    private Long siguienteId = 1L;
-
-    public TorneoService() {
-
-        torneos.add(new Torneo(
-                siguienteId++,
-                "Copa Meta 2026",
-                "Villavicencio",
-                "Sub-15",
-                12,
-                LocalDate.of(2026, 9, 10)
-        ));
-
-        torneos.add(new Torneo(
-                siguienteId++,
-                "Liga Regional",
-                "Acacias",
-                "Sub-17",
-                10,
-                LocalDate.of(2026, 10, 5)
-        ));
+    public TorneoService(TorneoRepository torneoRepository) {
+        this.torneoRepository = torneoRepository;
     }
 
-    public List<Torneo> obtenerTodos() {
-        return torneos;
-    }
-
-    public Optional<Torneo> obtenerPorId(Long id) {
-
-        return torneos.stream()
-                .filter(torneo -> torneo.getId().equals(id))
-                .findFirst();
-    }
-
-    public List<Torneo> buscarPorCiudad(String ciudad) {
-
-        return torneos.stream()
-                .filter(torneo ->
-                        torneo.getCiudad()
-                                .equalsIgnoreCase(ciudad)
-                )
-                .toList();
-    }
-
+    // CREATE
     public Torneo crear(TorneoRequest request) {
 
         Torneo torneo = new Torneo(
-                siguienteId++,
+                null,
                 request.nombre(),
                 request.ciudad(),
                 request.categoria(),
@@ -70,8 +30,50 @@ public class TorneoService {
                 request.fechaInicio()
         );
 
-        torneos.add(torneo);
+        return torneoRepository.save(torneo);
+    }
 
-        return torneo;
+    // READ - Todos
+    public List<Torneo> obtenerTodos() {
+        return torneoRepository.findAll();
+    }
+
+    // READ - Por ID
+    public Optional<Torneo> obtenerPorId(Long id) {
+        return torneoRepository.findById(id);
+    }
+
+    // UPDATE
+    public Optional<Torneo> actualizar(
+            Long id,
+            TorneoRequest request) {
+
+        return torneoRepository.findById(id)
+                .map(torneo -> {
+
+                    torneo.setNombre(request.nombre());
+                    torneo.setCiudad(request.ciudad());
+                    torneo.setCategoria(request.categoria());
+                    torneo.setNumeroEquipos(request.numeroEquipos());
+                    torneo.setFechaInicio(request.fechaInicio());
+
+                    return torneoRepository.save(torneo);
+                });
+    }
+
+    // DELETE
+    public boolean eliminar(Long id) {
+
+        if (!torneoRepository.existsById(id)) {
+            return false;
+        }
+
+        torneoRepository.deleteById(id);
+        return true;
+    }
+
+    // CONSULTA PERSONALIZADA
+    public List<Torneo> buscarPorCiudad(String ciudad) {
+        return torneoRepository.findByCiudadIgnoreCase(ciudad);
     }
 }
